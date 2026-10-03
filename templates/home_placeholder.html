@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Hop & Barley — скоро запуск{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px; margin: 80px auto; text-align: center;">
+    <img src="{% static 'img/logo.svg' %}" alt="Hop & Barley" style="height: 80px; margin-bottom: 24px;">
+    <h1>Hop &amp; Barley</h1>
+    <p>
+        Проєкт ініціалізовано: Docker, PostgreSQL, Django, шаблони та статика
+        підключені й працюють. Каталог товарів зʼявиться в наступному кроці.
+    </p>
+    <p><a href="{% url 'admin:index' %}">Перейти в адмін-панель →</a></p>
+</div>
+{% endblock %}

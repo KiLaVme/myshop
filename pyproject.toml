@@ -1,0 +1,23 @@
+[project]
+name = "hop-and-barley-shop"
+version = "0.1.0"
+description = "Інтернет-магазин на Django/DRF (навчальний проєкт, HTML-дизайн Hop & Barley)."
+requires-python = ">=3.12"
+dependencies = [
+    # --- Крок 1: базова інфраструктура ---
+    "django==5.0.7",
+    "psycopg2-binary==2.9.9",
+    "python-dotenv==1.0.1",
+    "gunicorn==22.0.0",
+    "whitenoise==6.7.0",
+]
+
+[project.optional-dependencies]
+dev = []
+
+[tool.uv]
+# Проєкт з самого початку веде залежності через uv (сучасний, швидкий
+# менеджер пакетів), а не pip/requirements.txt - щоб при зростанні
+# проєкту не доводилось переходити на інший інструмент.
+# Локально: `uv sync` створить .venv і встановить залежності,
+# `uv lock` перегенерує uv.lock після зміни pyproject.toml.

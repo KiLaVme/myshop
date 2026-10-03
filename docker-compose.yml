@@ -1,0 +1,144 @@
+# ══════════════════════════════════════════════════════════
+# Docker Compose конфігурація для Hop & Barley Shop
+#
+# Усі налаштування портів та БД винесені у файл .env
+#
+# Два сервіси:
+#   - db  : PostgreSQL (порт з .env → DB_EXTERNAL_PORT)
+#   - web : Django-бекенд на Gunicorn (порт з .env → WEB_EXTERNAL_PORT)
+#
+# Запуск: docker compose up --build
+# ══════════════════════════════════════════════════════════
+
+name: hop-and-barley-shop
+
+services:
+
+  # ────────────────────────────────────────────────────────
+  # СЕРВІС: db — PostgreSQL база даних
+  # ────────────────────────────────────────────────────────
+  db:
+    # Назва образу, що буде використаний
+    image: postgres:16-alpine
+
+    # Ім'я контейнера (для зручності в логах та командах)
+    container_name: hopbarley_db
+
+    # ── Змінні середовища ─────────────────────────────────
+    # Читаємо прямо з .env через синтаксис ${ЗМІННА}
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    # ── Ports ─────────────────────────────────────────────
+    ports:
+      # Зовнішній порт береться з .env (за замовчуванням 5432)
+      # для підключення через DBeaver / pgAdmin
+      - "${DB_EXTERNAL_PORT:-5432}:5432"
+
+    # ── Volumes ───────────────────────────────────────────
+    volumes:
+      # Дані PostgreSQL — іменований volume (не bind mount):
+      # PostgreSQL потребує специфічних прав на файли
+      - postgres_data:/var/lib/postgresql/data
+
+    # ── Перезапуск ────────────────────────────────────────
+    # always: перезапускати контейнер завжди (навіть після збою)
+    restart: always
+
+    # ── Мережа ────────────────────────────────────────────
+    networks:
+      - hopbarley_network
+
+    # pg_isready — стандартна утиліта перевірки готовності PostgreSQL.
+    # Сервіс web чекає на healthy перед стартом (depends_on нижче).
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s       # Перевіряємо часто — щоб web не чекав довго
+      timeout: 5s
+      retries: 10
+      start_period: 10s  # Час на ініціалізацію PostgreSQL при першому запуску
+
+  # ────────────────────────────────────────────────────────
+  # СЕРВІС: web — Django-бекенд (Gunicorn)
+  # ────────────────────────────────────────────────────────
+  web:
+    # Назва образу, що буде побудований
+    image: hopbarley-web:latest
+
+    # Збираємо образ з поточної директорії (де знаходиться Dockerfile)
+    build:
+      context: .           # Контекст збірки — корінь проекту
+      dockerfile: Dockerfile
+
+    # Ім'я контейнера (для зручності в логах та командах)
+    container_name: hopbarley_web
+
+    # entrypoint.sh (з Dockerfile) чекає на БД, застосовує міграції
+    # та збирає статику, а тоді запускає команду нижче
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:${SERVER_PORT:-8000} --workers 3
+
+    # ── Ports ─────────────────────────────────────────────
+    ports:
+      # WEB_EXTERNAL_PORT:SERVER_PORT — зовнішній:внутрішній
+      - "${WEB_EXTERNAL_PORT:-8000}:${SERVER_PORT:-8000}"
+
+    # ── Bind mounts ───────────────────────────────────────
+    # Код проєкту монтується прямо в контейнер - зручно для розробки
+    # (зміни в шаблонах/статиці видно одразу, без перезбірки образу).
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+
+    # env_file передає ВСІ змінні з .env у контейнер одним рядком —
+    # не треба перераховувати кожну окремо
+    env_file:
+      - .env
+
+    # ── Залежності ────────────────────────────────────────
+    # Бекенд стартує тільки після того, як db пройшов healthcheck
+    depends_on:
+      db:
+        condition: service_healthy
+
+    # ── Перезапуск ────────────────────────────────────────
+    restart: always
+
+    # ── Мережа ────────────────────────────────────────────
+    networks:
+      - hopbarley_network
+
+    # ── Healthcheck ───────────────────────────────────────
+    # Звертаємось до головної сторінки каталогу - якщо Django відповідає,
+    # сервіс вважається здоровим
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:${SERVER_PORT:-8000}/')"]
+      interval: 30s      # Перевіряємо кожні 30 секунд
+      timeout: 10s        # Таймаут для відповіді
+      retries: 3           # Кількість спроб перед позначенням як unhealthy
+      start_period: 30s     # Час на міграції/collectstatic перед першою перевіркою
+
+# ════════════════════════════════════════════════════════
+# VOLUMES
+# ════════════════════════════════════════════════════════
+volumes:
+  # Іменований volume для даних PostgreSQL
+  postgres_data:
+    name: hopbarley-db-data
+  # Зібрана статика (collectstatic) та завантажені медіа-файли
+  static_volume:
+    name: hopbarley-static
+  media_volume:
+    name: hopbarley-media
+
+# ════════════════════════════════════════════════════════
+# NETWORKS — мережа для взаємодії контейнерів
+# ════════════════════════════════════════════════════════
+networks:
+  hopbarley_network:
+    # bridge: стандартний тип мережі для взаємодії контейнерів
+    driver: bridge
+    name: hopbarley-network

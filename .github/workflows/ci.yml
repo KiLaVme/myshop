@@ -1,0 +1,73 @@
+# CI-пайплайн: "розумний смоук-тест" проєкту.
+#
+# На цьому етапі (Крок 1) проєкт ще зовсім простий, тому CI поки що
+# лише перевіряє, що застосунок коректно збирається, підключається до
+# PostgreSQL і проходить стандартні перевірки Django (`manage.py check`).
+#
+# У міру розвитку проєкту цей файл розширюватиметься
+# позначки "З'явиться на Кроці N" нижче та CHANGELOG.md.
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+
+    # Піднімаємо PostgreSQL як сервіс-контейнер для CI,
+    # аналогічно до db-сервісу в docker-compose.yml
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: hopbarley
+          POSTGRES_USER: hopbarley_user
+          POSTGRES_PASSWORD: hopbarley_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hopbarley_user -d hopbarley"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DEBUG: "1"
+      SECRET_KEY: "ci-test-secret-key"
+      ALLOWED_HOSTS: "localhost,127.0.0.1"
+      DB_NAME: hopbarley
+      DB_USER: hopbarley_user
+      DB_PASSWORD: hopbarley_pass
+      DB_HOST: localhost
+      DB_PORT: 5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Apply database migrations
+        run: |
+          uv run python manage.py makemigrations --noinput
+          uv run python manage.py migrate --noinput
+
+      - name: Django system check
+        run: uv run python manage.py check
+
+      # --- Наступні кроки з'являться пізніше ---
+      # Крок 9  (REST API): перевірка, що OpenAPI-схема валідно генерується
+      # Крок 10 (Якість):   flake8, mypy, pytest --cov
