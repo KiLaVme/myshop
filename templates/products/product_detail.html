@@ -26,13 +26,13 @@
 
         {% if product.in_stock %}
             <p class="product-page__stock">В наявності: {{ product.stock }} шт.</p>
-            {# Кошик буде реалізовано на Кроці 5 - поки що прев'ю елементів керування #}
-            <div class="cart-add-form">
-                <label>Кількість: <input type="number" value="1" min="1" max="{{ product.stock }}" disabled></label>
-                <button type="button" class="button button--primary" disabled title="Кошик з'явиться на Кроці 5">
-                    Додати в кошик (скоро)
-                </button>
-            </div>
+            <form method="post" action="{% url 'orders:cart_add' product.id %}" class="cart-add-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <input type="hidden" name="override" value="">
+                <label>Кількість: <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}"></label>
+                <button type="submit" class="button button--primary">Додати в кошик</button>
+            </form>
         {% else %}
             <p class="product-page__stock product-page__stock--out">Немає в наявності</p>
         {% endif %}
