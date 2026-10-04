@@ -12,6 +12,8 @@ dependencies = [
     "whitenoise==6.7.0",
     # --- Крок 2: модель Product.image (ImageField) ---
     "pillow==10.4.0",
+    # --- Крок 3: каталог (фільтри за категорією/ціною) ---
+    "django-filter==24.2",
 ]
 
 [project.optional-dependencies]

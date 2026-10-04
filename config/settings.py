@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
 
+    # Сторонні бібліотеки
+    "django_filters",
+
     # Додатки проєкту
     "apps.products",
     "apps.orders",

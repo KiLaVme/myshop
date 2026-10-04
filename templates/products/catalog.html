@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Каталог товарів | Hop & Barley{% endblock %}
+
+{% block content %}
+<div class="container main-content-grid">
+    <aside class="sidebar filter-menu">
+        <form method="get" action="{% url 'products:catalog' %}">
+            <div class="sidebar__section">
+                <h3 class="section-title">Категорія</h3>
+                <div class="checkbox-group">
+                    <label class="checkbox-container">Усі
+                        <input type="radio" name="category" value="" {% if not current_category %}checked{% endif %} onchange="this.form.submit()">
+                        <span class="checkmark"></span>
+                    </label>
+                    {% for category in categories %}
+                        <label class="checkbox-container">{{ category.name }}
+                            <input type="radio" name="category" value="{{ category.slug }}"
+                                   {% if current_category == category.slug %}checked{% endif %}
+                                   onchange="this.form.submit()">
+                            <span class="checkmark"></span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="sidebar__section">
+                <h3 class="section-title">Ціна, $</h3>
+                <div class="price-range">
+                    <input type="number" name="min_price" placeholder="Від" value="{{ request.GET.min_price }}" step="0.01" min="0">
+                    <input type="number" name="max_price" placeholder="До" value="{{ request.GET.max_price }}" step="0.01" min="0">
+                </div>
+            </div>
+
+            {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+            {% if current_sort %}<input type="hidden" name="sort" value="{{ current_sort }}">{% endif %}
+            <button type="submit" class="button button--primary" style="margin-top:12px;">Застосувати</button>
+            <a href="{% url 'products:catalog' %}" class="button button--secondary" style="margin-top:8px;">Скинути</a>
+        </form>
+    </aside>
+
+    <section class="products-area product-grid-section">
+        <div class="search-sort-bar">
+            <form method="get" class="search-input-wrapper">
+                {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+                <input type="text" name="q" placeholder="Пошук..." class="search-input" value="{{ search_query }}">
+                <button class="search-button" type="submit" aria-label="Search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+            <div class="sort-options">
+                {% for key, label in sort_choices %}
+                    <a href="?{{ request.GET.urlencode }}&sort={{ key }}"
+                       class="sort-button {% if current_sort == key %}active-sort{% endif %}">
+                        <span>{{ label }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="product-grid">
+            {% for product in products %}
+                {# На Кроці 4 картка стане посиланням на сторінку товару #}
+                <div class="product-card">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-card__image">
+                    {% else %}
+                        <img src="{% static 'img/products/citra_hops.jpg' %}" alt="{{ product.name }}" class="product-card__image">
+                    {% endif %}
+                    <div class="product-card__info">
+                        <h4 class="product-card__name">{{ product.name }}</h4>
+                        <p class="product-card__price">${{ product.price }}</p>
+                        <p class="product-card__description">{{ product.description|truncatewords:8 }}</p>
+                        {% if product.avg_rating %}
+                            <p class="product-card__rating">★ {{ product.avg_rating|floatformat:1 }}</p>
+                        {% endif %}
+                        {% if not product.in_stock %}
+                            <p class="product-card__stock-warning">Немає в наявності</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p>Товарів за вашим запитом не знайдено. Додайте товари через адмін-панель.</p>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" class="pagination__link pagination__link--prev">
+                    <i class="fa-solid fa-arrow-left"></i><span>Назад</span>
+                </a>
+            {% endif %}
+            <div class="pagination-list">
+                {% for num in page_obj.paginator.page_range %}
+                    <a href="?{{ request.GET.urlencode }}&page={{ num }}"
+                       class="pagination__link {% if page_obj.number == num %}active{% endif %}">{{ num }}</a>
+                {% endfor %}
+            </div>
+            {% if page_obj.has_next %}
+                <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" class="pagination__link pagination__link--next">
+                    <span>Далі</span><i class="fa-solid fa-arrow-right"></i>
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

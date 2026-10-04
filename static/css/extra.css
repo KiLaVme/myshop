@@ -13,3 +13,6 @@
 .message--error   { background: #fbe2e2; color: #7a1f1f; }
 .message--warning { background: #fff3cd; color: #7a5c00; }
 .message--info    { background: #e2f0fb; color: #1f4d7a; }
+
+.product-card__stock-warning { color: #c0392b; font-size: 12px; }
+.product-card__rating { color: #b8860b; font-size: 13px; }

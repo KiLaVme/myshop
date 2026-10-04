@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 
 
@@ -41,6 +42,21 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
 
+class ProductQuerySet(models.QuerySet):
+    """Кастомний QuerySet з корисними для каталогу фільтрами/анотаціями."""
+
+    def active(self) -> "ProductQuerySet":
+        """Тільки товари, доступні для показу в каталозі."""
+        return self.filter(is_active=True)
+
+    def with_rating(self) -> "ProductQuerySet":
+        """Додає середній рейтинг та кількість відгуків - для сортування/показу."""
+        return self.annotate(
+            avg_rating=models.Avg("reviews__rating"),
+            reviews_count=models.Count("reviews", distinct=True),
+        )
+
+
 class Product(models.Model):
     """Товар каталогу."""
 
@@ -60,6 +76,8 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = ProductQuerySet.as_manager()
+
     class Meta:
         verbose_name = "Товар"
         verbose_name_plural = "Товари"
@@ -76,6 +94,9 @@ class Product(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self) -> str:
+        return reverse("products:product_detail", kwargs={"slug": self.slug})
 
     @property
     def in_stock(self) -> bool:

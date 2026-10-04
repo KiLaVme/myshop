@@ -1,22 +1,18 @@
 """
 Головний URLConf проєкту.
 
-КРОК 1: поки що тут лише адмінка та тимчасова сторінка-заглушка на `/`,
-яка підтверджує, що шаблони (templates/) та статика (static/) підключені
-й коректно рендеряться. У наступних кроках `/` заміниться на справжній
-каталог товарів (apps.products), а список маршрутів розшириться
-(cart/, checkout/, account/, api/, graphql/ тощо).
+КРОК 3: `/` та `/products/` тепер ведуть на справжній каталог товарів
+(apps.products). Заглушку home_placeholder.html прибрано.
 """
 
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
-from django.views.generic import TemplateView
+from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", TemplateView.as_view(template_name="home_placeholder.html"), name="home"),
+    path("", include("apps.products.urls", namespace="products")),
 ]
 
 if settings.DEBUG:

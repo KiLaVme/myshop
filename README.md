@@ -1,7 +1,7 @@
 # Hop & Barley — інтернет-магазин на Django/DRF
 
-> **Стан проєкту: Крок 2/12 — Створення моделей.**
-> Це другий комміт у покроковій розробці за дорожньою картою з ТЗ.
+> **Стан проєкту: Крок 3/12 — Реалізація каталогу.**
+> Це третій комміт у покроковій розробці за дорожньою картою з ТЗ.
 > Повний функціонал з'являтиметься поступово - див. [CHANGELOG.md](CHANGELOG.md).
 
 Навчальний проєкт: інтернет-магазин товарів для домашнього пивоваріння,
@@ -10,9 +10,19 @@
 
 ## Що реалізовано на цьому кроці
 
-- Усе з Кроку 1 (Docker, uv, PostgreSQL, базовий скелет Django).
-- Моделі БД: `Category`, `Product`, `Order`, `OrderItem`, `Review`.
-- Базова реєстрація моделей в адмін-панелі Django (CRUD "з коробки").
+- Усе з Кроків 1-2 (Docker, uv, PostgreSQL, моделі БД).
+- Каталог товарів (`/`, `/products/`): пагінація, пошук за назвою/описом,
+  фільтр за категорією та ціною, сортування (новизна/ціна/рейтинг).
+
+## Швидкий старт
+
+```bash
+cp .env.example .env
+docker-compose up --build
+docker-compose exec web python manage.py seed_data   # демо-товари
+```
+
+Відкрийте http://localhost:8000/ - каталог з демо-товарами.
 
 ## Стек технологій
 
@@ -56,17 +66,19 @@ uv lock                   # перегенерувати uv.lock після ру
 
 ```
 myshop/
-├── config/            # settings.py, urls.py, wsgi.py, asgi.py
+├── config/
 ├── apps/
-│   ├── products/       # Category, Product (моделі + базова admin)
-│   ├── orders/          # Order, OrderItem (моделі + базова admin)
-│   └── reviews/          # Review (модель + базова admin)
-├── templates/          # base.html + тимчасова заглушка
-├── static/              # CSS/JS/зображення з оригінального шаблону
+│   ├── products/       # Category, Product + каталог (views/filters/urls)
+│   ├── orders/
+│   └── reviews/
+├── templates/
+│   ├── base.html
+│   └── products/catalog.html
+├── static/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── entrypoint.sh
-├── pyproject.toml      # залежності (uv)
+├── pyproject.toml
 ├── CHANGELOG.md
 └── manage.py
 ```
@@ -74,7 +86,7 @@ myshop/
 ## CI/CD та підключення до GitHub
 
 Проєкт має робочий CI з найпершого кроку: `.github/workflows/ci.yml`
-(GitHub Actions). Наразі (Крок 2) пайплайн лише
+(GitHub Actions). Наразі (Крок 3) пайплайн лише
 піднімає PostgreSQL, встановлює залежності через `uv sync` і перевіряє, що проєкт застосовує міграції та проходить `manage.py check`. Він розширюватиметься на Кроці 9 (валідація OpenAPI-схеми) та Кроці 10 (flake8, mypy, pytest) - див. [CHANGELOG.md](CHANGELOG.md).
 
 GitHub Actions вмикається автоматично, щойно workflow-файл опиняється в
@@ -86,5 +98,5 @@ GitHub Actions вмикається автоматично, щойно workflow-
 
 ## Наступні кроки
 
-Див. [CHANGELOG.md](CHANGELOG.md). Далі: реалізація каталогу товарів
-(список, фільтри, пошук, пагінація) на `/` та `/products/`.
+Див. [CHANGELOG.md](CHANGELOG.md). Далі: сторінка товару з деталями
+та відгуками.

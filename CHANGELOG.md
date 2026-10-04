@@ -35,3 +35,17 @@
 - Додано `Pillow` до залежностей (потрібен для `Product.image`).
 - Міграції генеруються автоматично при старті контейнера
   (`entrypoint.sh` викликає `makemigrations` перед `migrate`).
+
+## Крок 3 — Реалізація каталогу
+
+- `django-filter` + `ProductFilter` (фільтр за категорією-slug та
+  діапазоном цін).
+- `ProductListView` (CBV): пошук за назвою/описом, сортування
+  (новизна/ціна/рейтинг), пагінація (`paginate_by=9`).
+- `Product.objects` - кастомний `ProductQuerySet` (`active()`,
+  `with_rating()` - анотація середнього рейтингу через `Avg`/`Count`,
+  оптимізовано через `select_related("category")` - уникнення N+1).
+- Шаблон `templates/products/catalog.html` (картки поки не клікабельні -
+  сторінка товару з'явиться на Кроці 4).
+- `/` та `/products/` тепер ведуть на каталог (заглушку прибрано).
+- Команда `python manage.py seed_data` - наповнення демо-товарами.
