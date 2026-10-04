@@ -1,7 +1,7 @@
 """
 Django settings for the Hop & Barley (myshop) project.
 
-КРОК 1 (ініціалізація проєкту): тут налаштовано лише базову
+Крок 1 (ініціалізація проєкту): тут налаштовано лише базову
 інфраструктуру - Django, PostgreSQL, статика/шаблони. У наступних
 кроках цей файл поступово доповнюватиметься (додатки products/orders/
 users/reviews, DRF, JWT, GraphQL тощо) - див. CHANGELOG.md.
@@ -50,8 +50,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
 
-    # Додатки проєкту з'являться тут у наступних кроках:
-    # apps.products, apps.orders, apps.users, apps.reviews, apps.graphql
+    # Додатки проєкту
+    "apps.products",
+    "apps.orders",
+    "apps.reviews",
 ]
 
 MIDDLEWARE = [
