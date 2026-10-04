@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} | Hop & Barley{% endblock %}
+
+{% block content %}
+<div class="container product-page">
+    <div class="product-page__gallery">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-page__image">
+        {% else %}
+            <img src="{% static 'img/products/citra_hops.jpg' %}" alt="{{ product.name }}" class="product-page__image">
+        {% endif %}
+    </div>
+
+    <div class="product-page__info">
+        <h1>{{ product.name }}</h1>
+        <p class="product-page__category">Категорія: {{ product.category.name }}</p>
+        {% if avg_rating %}
+            <p class="product-page__rating">★ {{ avg_rating }} ({{ reviews|length }} відгуків)</p>
+        {% else %}
+            <p class="product-page__rating">Ще немає відгуків</p>
+        {% endif %}
+        <p class="product-page__price">${{ product.price }}</p>
+        <p class="product-page__description">{{ product.description }}</p>
+
+        {% if product.in_stock %}
+            <p class="product-page__stock">В наявності: {{ product.stock }} шт.</p>
+            {# Кошик буде реалізовано на Кроці 5 - поки що прев'ю елементів керування #}
+            <div class="cart-add-form">
+                <label>Кількість: <input type="number" value="1" min="1" max="{{ product.stock }}" disabled></label>
+                <button type="button" class="button button--primary" disabled title="Кошик з'явиться на Кроці 5">
+                    Додати в кошик (скоро)
+                </button>
+            </div>
+        {% else %}
+            <p class="product-page__stock product-page__stock--out">Немає в наявності</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container reviews-section">
+    <h2>Відгуки</h2>
+
+    {% for review in reviews %}
+        <div class="review-card">
+            <p class="review-card__author">{{ review.user.username }} - {{ review.rating }} ★</p>
+            <p class="review-card__date">{{ review.created_at|date:"d.m.Y" }}</p>
+            <p class="review-card__comment">{{ review.comment }}</p>
+        </div>
+    {% empty %}
+        <p>Відгуків поки немає. Будьте першими!</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+        {% if user_has_purchased and not user_has_reviewed %}
+            <h3>Залишити відгук</h3>
+            <form method="post" class="review-form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="button button--primary">Надіслати відгук</button>
+            </form>
+        {% elif user_has_reviewed %}
+            <p>Ви вже залишили відгук на цей товар. Дякуємо!</p>
+        {% else %}
+            <p>Залишити відгук можна лише після покупки цього товару.</p>
+        {% endif %}
+    {% else %}
+        <p>Увійдіть у свій акаунт (через <a href="{% url 'admin:index' %}">адмін-панель</a> - повноцінний
+           вхід для покупців з'явиться на Кроці 7), щоб залишити відгук після покупки.</p>
+    {% endif %}
+</div>
+{% endblock %}

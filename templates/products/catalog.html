@@ -61,25 +61,26 @@
 
         <div class="product-grid">
             {% for product in products %}
-                {# На Кроці 4 картка стане посиланням на сторінку товару #}
-                <div class="product-card">
-                    {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-card__image">
-                    {% else %}
-                        <img src="{% static 'img/products/citra_hops.jpg' %}" alt="{{ product.name }}" class="product-card__image">
-                    {% endif %}
-                    <div class="product-card__info">
-                        <h4 class="product-card__name">{{ product.name }}</h4>
-                        <p class="product-card__price">${{ product.price }}</p>
-                        <p class="product-card__description">{{ product.description|truncatewords:8 }}</p>
-                        {% if product.avg_rating %}
-                            <p class="product-card__rating">★ {{ product.avg_rating|floatformat:1 }}</p>
+                <a href="{{ product.get_absolute_url }}" class="product-card-link">
+                    <div class="product-card">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-card__image">
+                        {% else %}
+                            <img src="{% static 'img/products/citra_hops.jpg' %}" alt="{{ product.name }}" class="product-card__image">
                         {% endif %}
-                        {% if not product.in_stock %}
-                            <p class="product-card__stock-warning">Немає в наявності</p>
-                        {% endif %}
+                        <div class="product-card__info">
+                            <h4 class="product-card__name">{{ product.name }}</h4>
+                            <p class="product-card__price">${{ product.price }}</p>
+                            <p class="product-card__description">{{ product.description|truncatewords:8 }}</p>
+                            {% if product.avg_rating %}
+                                <p class="product-card__rating">★ {{ product.avg_rating|floatformat:1 }}</p>
+                            {% endif %}
+                            {% if not product.in_stock %}
+                                <p class="product-card__stock-warning">Немає в наявності</p>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
+                </a>
             {% empty %}
                 <p>Товарів за вашим запитом не знайдено. Додайте товари через адмін-панель.</p>
             {% endfor %}
