@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Особистий кабінет | Hop & Barley{% endblock %}
+
+{% block content %}
+<div class="container account-page">
+    <h1>Вітаємо, {{ user.first_name|default:user.username }}!</h1>
+
+    <div class="account-nav">
+        <a href="{% url 'users:profile_edit' %}" class="button button--secondary">Редагувати профіль</a>
+        <a href="{% url 'users:password_change' %}" class="button button--secondary">Змінити пароль</a>
+    </div>
+
+    <h2>Історія замовлень</h2>
+    <form method="get" class="order-filter-form">
+        <select name="status" onchange="this.form.submit()">
+            <option value="">Усі статуси</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% for order in orders %}
+        <div class="order-card">
+            <p><strong>Замовлення №{{ order.id }}</strong> - {{ order.get_status_display }} - {{ order.created_at|date:"d.m.Y H:i" }}</p>
+            <ul>
+                {% for item in order.items.all %}
+                    <li>{{ item.product.name }} x {{ item.quantity }} = ${{ item.total }}</li>
+                {% endfor %}
+            </ul>
+            <p>Разом: ${{ order.total_price }}</p>
+        </div>
+    {% empty %}
+        <p>У вас ще немає замовлень.</p>
+    {% endfor %}
+</div>
+{% endblock %}

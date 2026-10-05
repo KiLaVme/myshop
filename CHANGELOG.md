@@ -88,3 +88,16 @@
 - `/cart/checkout/`, `/cart/checkout/success/` (доступні лише
   авторизованим - `LoginRequiredMixin`, тимчасово через `/admin/login/`,
   повноцінний логін покупців - Крок 7).
+
+## Крок 7 — Особистий кабінет
+
+- `apps.users`: модель `Profile` (OneToOne до `User`, автостворення
+  через сигнал `post_save`), `RegisterForm`/`UserUpdateForm`/
+  `ProfileUpdateForm`.
+- `/account/register/`, `/account/login/`, `/account/logout/`,
+  `/account/` (історія замовлень з фільтром за статусом),
+  `/account/edit/` (редагування профілю), `/account/password/`.
+- `LOGIN_URL` тепер вказує на `users:login` (замість тимчасового
+  `/admin/login/` з Кроку 6).
+- Header (`base.html`) отримав повноцінну навігацію: Sign in/Register
+  для анонімів, посилання на кабінет+Sign out для авторизованих.

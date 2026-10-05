@@ -21,13 +21,36 @@
             <img src="{% static 'img/logo.svg' %}" alt="Hop & Barley Logo">
             <p class="logo-text">Hop &amp; Barley</p>
         </a>
-        <div class="header__actions">
-            <a href="{% url 'orders:cart_detail' %}" class="cart-icon" aria-label="Shopping Cart">
-                <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
-                {% if cart|length %}<span class="cart-count">{{ cart|length }}</span>{% endif %}
-            </a>
-        </div>
-        {# Навігація та авторизація з'являться в наступних кроках #}
+        <nav class="header__nav">
+            <ul>
+                <li><a href="{% url 'products:catalog' %}">Products</a></li>
+            </ul>
+        </nav>
+
+        {% if user.is_authenticated %}
+            <div class="header__user-actions">
+                <a href="{% url 'users:account' %}" class="user-icon" aria-label="My Account">
+                    <img src="{% static 'img/icons/User_alt.svg' %}" alt="User Account">
+                </a>
+                <a href="{% url 'orders:cart_detail' %}" class="cart-icon" aria-label="Shopping Cart">
+                    <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+                    {% if cart|length %}<span class="cart-count">{{ cart|length }}</span>{% endif %}
+                </a>
+                <form method="post" action="{% url 'users:logout' %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="button button--secondary">Sign out</button>
+                </form>
+            </div>
+        {% else %}
+            <div class="header__auth-buttons">
+                <a href="{% url 'users:login' %}" class="button button--secondary">Sign in</a>
+                <a href="{% url 'users:register' %}" class="button button--primary">Register</a>
+                <a href="{% url 'orders:cart_detail' %}" class="cart-icon" aria-label="Shopping Cart">
+                    <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+                    {% if cart|length %}<span class="cart-count">{{ cart|length }}</span>{% endif %}
+                </a>
+            </div>
+        {% endif %}
     </div>
 </header>
 

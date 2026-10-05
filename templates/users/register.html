@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Реєстрація | Hop & Barley{% endblock %}
+
+{% block content %}
+<div class="container auth-page">
+    <h1>Реєстрація</h1>
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="button button--primary">Зареєструватись</button>
+    </form>
+    <p>Вже є акаунт? <a href="{% url 'users:login' %}">Увійти</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Редагування профілю | Hop & Barley{% endblock %}
+
+{% block content %}
+<div class="container auth-page">
+    <h1>Редагування профілю</h1>
+    {% if saved %}<p class="message message--success">Дані збережено.</p>{% endif %}
+    <form method="post" enctype="multipart/form-data" class="auth-form">
+        {% csrf_token %}
+        <h3>Основні дані</h3>
+        {% for field in user_form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
+            </div>
+        {% endfor %}
+
+        <h3>Додаткові дані</h3>
+        {% for field in profile_form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<p class="field-error">{{ field.errors|join:", " }}</p>{% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="button button--primary">Зберегти</button>
+    </form>
+</div>
+{% endblock %}

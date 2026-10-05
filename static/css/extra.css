@@ -50,3 +50,11 @@
 .form-group { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
 .form-group input, .form-group select, .form-group textarea { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
 .field-error { color: #c0392b; font-size: 13px; margin: 0; }
+
+.auth-page, .account-page { max-width: 900px; margin: 32px auto; padding: 0 16px; }
+.auth-form { display: flex; flex-direction: column; gap: 12px; max-width: 420px; }
+.account-nav { display: flex; gap: 12px; margin: 16px 0 32px; }
+.order-card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.order-filter-form { margin-bottom: 24px; }
+.order-filter-form select { padding: 8px; border-radius: 6px; }
+.header__user-actions, .header__auth-buttons { margin-left: auto; display: flex; align-items: center; gap: 12px; }

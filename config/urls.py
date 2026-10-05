@@ -14,6 +14,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("apps.products.urls", namespace="products")),
     path("", include("apps.orders.urls", namespace="orders")),
+    path("account/", include("apps.users.urls", namespace="users")),
 ]
 
 if settings.DEBUG:

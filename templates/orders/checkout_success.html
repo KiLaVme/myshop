@@ -11,6 +11,7 @@
     {% else %}
         <p>Ваше замовлення успішно оформлено.</p>
     {% endif %}
-    <a href="{% url 'products:catalog' %}" class="button button--primary">Продовжити покупки</a>
+    <a href="{% url 'users:account' %}" class="button button--primary">Мої замовлення</a>
+    <a href="{% url 'products:catalog' %}" class="button button--secondary">Продовжити покупки</a>
 </div>
 {% endblock %}

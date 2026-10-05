@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "apps.products",
     "apps.orders",
     "apps.reviews",
+    "apps.users",
 ]
 
 MIDDLEWARE = [
@@ -150,10 +151,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CART_SESSION_ID = "cart"
 
 # -----------------------------------------------------------------
-# Авторизація (тимчасово через стандартну адмінку Django - повноцінний
-# веб-логін для покупців з'явиться на Кроці 7)
+# Авторизація / сесії (веб-інтерфейс - session-based)
 # -----------------------------------------------------------------
-LOGIN_URL = "/admin/login/"
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "users:account"
+LOGOUT_REDIRECT_URL = "products:catalog"
 
 # -----------------------------------------------------------------
 # Пошта
