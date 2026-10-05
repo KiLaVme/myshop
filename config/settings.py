@@ -16,6 +16,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 import os
+import sys
 
 load_dotenv()
 
@@ -132,6 +133,11 @@ USE_I18N = True
 USE_TZ = True
 
 # -----------------------------------------------------------------
+# Перевіряємо, чи запущено виконання тестів
+# -----------------------------------------------------------------
+TESTING = "pytest" in sys.modules or "test" in sys.argv
+
+# -----------------------------------------------------------------
 # Static & media files
 # -----------------------------------------------------------------
 STATIC_URL = "static/"
@@ -139,7 +145,13 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # Під час тестів використовуємо звичайне StaticFilesStorage,
+        # щоб не вимагати наявності згенерованого staticfiles.json
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if TESTING
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
     },
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
