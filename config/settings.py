@@ -150,6 +150,26 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CART_SESSION_ID = "cart"
 
 # -----------------------------------------------------------------
+# Авторизація (тимчасово через стандартну адмінку Django - повноцінний
+# веб-логін для покупців з'явиться на Кроці 7)
+# -----------------------------------------------------------------
+LOGIN_URL = "/admin/login/"
+
+# -----------------------------------------------------------------
+# Пошта
+# -----------------------------------------------------------------
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@hopandbarley.local")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@hopandbarley.local")
+
+# -----------------------------------------------------------------
 # Логування - виводимо все у консоль (зручно для docker-compose logs)
 # -----------------------------------------------------------------
 LOGGING = {

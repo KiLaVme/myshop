@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Дякуємо за замовлення | Hop & Barley{% endblock %}
+
+{% block content %}
+<div class="container checkout-success">
+    <h1>Дякуємо за замовлення!</h1>
+    {% if order %}
+        <p>Ваше замовлення №{{ order.id }} на суму ${{ order.total_price }} успішно оформлено.</p>
+        <p>Ми надіслали підтвердження на {{ order.email }} (у DEBUG-режимі лист виведено в лог контейнера web).</p>
+    {% else %}
+        <p>Ваше замовлення успішно оформлено.</p>
+    {% endif %}
+    <a href="{% url 'products:catalog' %}" class="button button--primary">Продовжити покупки</a>
+</div>
+{% endblock %}

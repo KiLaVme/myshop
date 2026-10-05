@@ -53,9 +53,7 @@
             {% if cart.has_stock_issues %}
                 <p class="stock-warning">Зменшіть кількість деяких товарів - недостатньо на складі.</p>
             {% else %}
-                <button class="button button--primary" disabled title="Оформлення замовлення з'явиться на Кроці 6">
-                    Оформити замовлення (скоро)
-                </button>
+                <a href="{% url 'orders:checkout' %}" class="button button--primary">Оформити замовлення</a>
             {% endif %}
         </div>
     {% endif %}

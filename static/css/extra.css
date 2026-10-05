@@ -44,3 +44,9 @@
 .cart-summary { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
 .cart-summary__total { font-size: 20px; font-weight: 600; }
 .cart-page { max-width: 900px; margin: 32px auto; padding: 0 16px; }
+
+.checkout-page, .checkout-success { max-width: 900px; margin: 32px auto; padding: 0 16px; }
+.checkout-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; margin-top: 24px; }
+.form-group { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
+.form-group input, .form-group select, .form-group textarea { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+.field-error { color: #c0392b; font-size: 13px; margin: 0; }
