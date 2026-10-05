@@ -14,6 +14,11 @@ dependencies = [
     "pillow==10.4.0",
     # --- Крок 3: каталог (фільтри за категорією/ціною) ---
     "django-filter==24.2",
+    # --- Крок 9: REST API, JWT, Swagger ---
+    "djangorestframework==3.15.2",
+    "djangorestframework-simplejwt==5.3.1",
+    "drf-spectacular==0.27.2",
+    "django-cors-headers==4.4.0",
 ]
 
 [project.optional-dependencies]

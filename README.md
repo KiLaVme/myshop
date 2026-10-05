@@ -1,7 +1,7 @@
 # Hop & Barley — інтернет-магазин на Django/DRF
 
-> **Стан проєкту: Крок 8/12 — Адмін-панель та аналітика.**
-> Це восьмий комміт у покроковій розробці за дорожньою картою з ТЗ.
+> **Стан проєкту: Крок 9/12 — REST API, JWT, документація.**
+> Це дев'ятий комміт у покроковій розробці за дорожньою картою з ТЗ.
 > Повний функціонал з'являтиметься поступово - див. [CHANGELOG.md](CHANGELOG.md).
 
 Навчальний проєкт: інтернет-магазин товарів для домашнього пивоваріння,
@@ -28,6 +28,26 @@
 - Кастомізована адмін-панель (`/admin/`): зручний список товарів з
   inline-редагуванням, кастомні фільтри та масові дії, сторінка
   "Аналітика продажів" (виторг, середній чек, топ-товари).
+- REST API (`/api/`) з JWT-автентифікацією: товари, замовлення, кошик,
+  відгуки, реєстрація/логін. Документація: `/api/docs/` (Swagger UI).
+
+## REST API - швидкий приклад
+
+```bash
+# Реєстрація (одразу повертає JWT-пару)
+curl -X POST http://localhost:8000/api/users/register/ \
+  -H "Content-Type: application/json" \
+  -d '{"username": "john", "email": "john@example.com", "password": "StrongPass123"}'
+
+# Логін
+curl -X POST http://localhost:8000/api/users/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"username": "john", "password": "StrongPass123"}'
+
+# Використання access-токена
+curl http://localhost:8000/api/users/me/ \
+  -H "Authorization: Bearer <access_token>"
+```
 
 ## Швидкий старт
 
@@ -103,20 +123,23 @@ myshop/
 
 ## CI/CD та підключення до GitHub
 
-Проєкт має робочий CI з найпершого кроку: `.github/workflows/ci.yml`
-(GitHub Actions). Наразі (Крок 8) пайплайн лише
-піднімає PostgreSQL, встановлює залежності через `uv sync` і перевіряє,
-що проєкт застосовує міграції та проходить `manage.py check`. Він
-розширюватиметься на Кроці 9 (валідація OpenAPI-схеми) та Кроці 10
-(flake8, mypy, pytest) - див. [CHANGELOG.md](CHANGELOG.md).
+CI (`.github/workflows/ci.yml`) працює з Кроку 1. На цьому кроці до
+нього додано перевірку валідності OpenAPI-схеми
+(`manage.py spectacular --fail-on-warn`) - якщо зміна в серіалізаторі
+чи view випадково зламає генерацію схеми, CI одразу це покаже.
+Лінтери й тести з'являться на Кроці 10.
 
-GitHub Actions вмикається автоматично, щойно workflow-файл опиняється в
-гілці репозиторію - жодних додаткових налаштувань на боці GitHub не
-потрібно.
+Якщо ще не підключали проєкт до GitHub:
 
-Відкрийте вкладку **Actions** у репозиторії на GitHub - workflow "CI"
-запуститься автоматично на цей push і на кожен наступний push/PR.
+```bash
+git init && git add . && git commit -m "Крок 9: REST API, JWT, документація"
+git branch -M main
+git remote add origin https://github.com/<ваш-акаунт>/<repo>.git
+git push -u origin main
+```
+
+Відкрийте вкладку **Actions** - workflow "CI" запуститься автоматично.
 
 ## Наступні кроки
 
-Див. [CHANGELOG.md](CHANGELOG.md). Далі: REST API з JWT-автентифікацією та Swagger-документацією.
+Див. [CHANGELOG.md](CHANGELOG.md). Далі: тести (pytest-django), лінтери (flake8/mypy), типізація.

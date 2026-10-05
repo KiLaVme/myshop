@@ -113,3 +113,23 @@
 - Окрема сторінка **"Аналітика продажів"** (`/admin/orders/order/analytics/`):
   загальний виторг, кількість замовлень, середній чек, топ-10 товарів
   за кількістю продажів - кнопка над списком замовлень в адмінці.
+
+## Крок 9 — REST API, JWT, документація
+
+- CI (`.github/workflows/ci.yml`, заведений на Кроці 1) доповнено
+  кроком валідації OpenAPI-схеми: `manage.py spectacular --fail-on-warn`
+  ловить помилки в серіалізаторах/views ще до рев'ю коду.
+
+- Додано `djangorestframework`, `djangorestframework-simplejwt`,
+  `drf-spectacular`, `django-cors-headers`.
+- `ProductViewSet` (read-only), `OrderViewSet` (CRUD лише власних
+  замовлень користувача), `CartAPIView`/`CartItemAPIView`,
+  `ReviewViewSet` (вкладений під товар), `RegisterAPIView`/
+  `LoginAPIView` (JWT access+refresh)/`MeAPIView`.
+- Swagger UI (`/api/docs/`), ReDoc (`/api/redoc/`), OpenAPI-схема
+  (`/api/schema/`) - через `drf-spectacular`.
+- JWT: access-токен 15 хв, refresh - 7 днів, ротація + blacklist
+  після ротації.
+- `IsAuthenticatedOrReadOnly` за замовчуванням; users бачать і можуть
+  редагувати лише свої замовлення/відгуки (перевірка на рівні
+  `get_queryset()`/`perform_create()`).

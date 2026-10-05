@@ -14,6 +14,7 @@ users/reviews, DRF, JWT, GraphQL тощо) - див. CHANGELOG.md.
 from pathlib import Path
 
 from dotenv import load_dotenv
+from datetime import timedelta
 import os
 
 load_dotenv()
@@ -52,6 +53,10 @@ INSTALLED_APPS = [
 
     # Сторонні бібліотеки
     "django_filters",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "drf_spectacular",
+    "corsheaders",
 
     # Додатки проєкту
     "apps.products",
@@ -63,6 +68,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -170,6 +176,65 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@hopandbarley.local")
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@hopandbarley.local")
+
+# -----------------------------------------------------------------
+# Django REST Framework
+# -----------------------------------------------------------------
+REST_FRAMEWORK = {
+    # За замовчуванням API вимагає JWT (для зовнішніх клієнтів),
+    # а SessionAuthentication дозволяє користуватись і Swagger UI
+    # залогінившись через звичайну Django-сесію (адмінка/браузер).
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 12,
+    "DEFAULT_FILTER_BACKENDS": (
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.ScopedRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "reviews": "20/hour",
+    },
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ.get("ACCESS_TOKEN_LIFETIME_MIN", 15))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ.get("REFRESH_TOKEN_LIFETIME_DAYS", 7))),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Hop & Barley Shop API",
+    "DESCRIPTION": (
+        "REST API інтернет-магазину товарів для пивоваріння. "
+        "Веб-інтерфейс використовує сесійну автентифікацію, "
+        "цей API - JWT (access + refresh)."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+}
+
+# -----------------------------------------------------------------
+# CORS (щоб зовнішні SPA-клієнти могли звертатись до /api/)
+# -----------------------------------------------------------------
+CORS_ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
+]
 
 # -----------------------------------------------------------------
 # Логування - виводимо все у консоль (зручно для docker-compose logs)
