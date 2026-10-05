@@ -15,7 +15,7 @@ class ProfileInline(admin.StackedInline):
 
 class UserAdmin(DjangoUserAdmin):
     inlines = (ProfileInline,)
-    list_display = DjangoUserAdmin.list_display + ("is_staff", "date_joined")
+    list_display = ["username", "email", "first_name", "last_name", "is_staff", "date_joined"]
 
 
 admin.site.unregister(User)

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+from django.contrib.auth.models import User
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -52,9 +55,12 @@ class AccountView(LoginRequiredMixin, TemplateView):
 
     template_name = "users/account.html"
 
-    def get_context_data(self, **kwargs) -> dict:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        orders = Order.objects.filter(user=self.request.user).prefetch_related("items__product")
+        
+        user = cast(User, self.request.user)
+
+        orders = Order.objects.filter(user=user).prefetch_related("items__product")
 
         status = self.request.GET.get("status")
         if status:

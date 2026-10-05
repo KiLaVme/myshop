@@ -6,9 +6,10 @@ from rest_framework import generics, permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from django.contrib.auth.models import User
 from .serializers import RegisterSerializer, UserSerializer
 
 
@@ -20,11 +21,11 @@ class RegisterAPIView(generics.CreateAPIView):
 
     def create(self, request: Request, *args, **kwargs) -> Response:
         response = super().create(request, *args, **kwargs)
-        # Одразу видаємо JWT-пару, щоб клієнт міг залогінитись без другого запиту
-        user = self.get_serializer().Meta.model.objects.get(pk=response.data["id"])
+        user = User.objects.get(pk=response.data["id"])
         refresh = RefreshToken.for_user(user)
+        access_token = AccessToken.for_user(user)
         response.data["tokens"] = {
-            "access": str(refresh.access_token),
+            "access": str(access_token),
             "refresh": str(refresh),
         }
         return response

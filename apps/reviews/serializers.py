@@ -10,7 +10,7 @@ from .models import Review
 class ReviewSerializer(serializers.ModelSerializer):
     """Серіалізатор відгуку. user проставляється автоматично з request.user."""
 
-    user = serializers.StringRelatedField(read_only=True)
+    user: serializers.Field = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Review

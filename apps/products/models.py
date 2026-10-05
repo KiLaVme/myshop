@@ -1,14 +1,30 @@
-"""Моделі каталогу товарів: Category та Product.
-
-Крок 2 дорожньої карти - лише моделі (без views/фільтрів/каталогу,
-вони з'являться на Кроці 3).
-"""
+"""Моделі каталогу товарів: Category та Product."""
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
+
+
+class ProductQuerySet(models.QuerySet["Product"]):
+    """Кастомний QuerySet з корисними для каталогу фільтрами/анотаціями."""
+
+    def active(self) -> ProductQuerySet:
+        """Тільки товари, доступні для показу в каталозі."""
+        return self.filter(is_active=True)
+
+    def with_rating(self) -> ProductQuerySet:
+        """Додає середній рейтинг та кількість відгуків - для сортування/показу."""
+        return self.annotate(
+            avg_rating=models.Avg("reviews__rating"),
+            reviews_count=models.Count("reviews", distinct=True),
+        )
+
+
+# Створюємо клас менеджера явно через from_queryset
+ProductManager = models.Manager.from_queryset(ProductQuerySet)
 
 
 class Category(models.Model):
@@ -27,6 +43,10 @@ class Category(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Вказуємо тип менеджера для mypy / django-stubs
+    if TYPE_CHECKING:
+        products: models.Manager[Product]
+
     class Meta:
         verbose_name = "Категорія"
         verbose_name_plural = "Категорії"
@@ -40,21 +60,6 @@ class Category(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
-
-
-class ProductQuerySet(models.QuerySet):
-    """Кастомний QuerySet з корисними для каталогу фільтрами/анотаціями."""
-
-    def active(self) -> "ProductQuerySet":
-        """Тільки товари, доступні для показу в каталозі."""
-        return self.filter(is_active=True)
-
-    def with_rating(self) -> "ProductQuerySet":
-        """Додає середній рейтинг та кількість відгуків - для сортування/показу."""
-        return self.annotate(
-            avg_rating=models.Avg("reviews__rating"),
-            reviews_count=models.Count("reviews", distinct=True),
-        )
 
 
 class Product(models.Model):
@@ -76,7 +81,8 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = ProductQuerySet.as_manager()
+    # Єдине визначення менеджера
+    objects = ProductManager()
 
     class Meta:
         verbose_name = "Товар"

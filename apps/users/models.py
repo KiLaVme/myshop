@@ -22,6 +22,8 @@ class Profile(models.Model):
     default_address = models.TextField("Адреса за замовчуванням", blank=True)
     avatar = models.ImageField("Аватар", upload_to="avatars/", blank=True, null=True)
 
+    objects = models.Manager()
+
     class Meta:
         verbose_name = "Профіль"
         verbose_name_plural = "Профілі"

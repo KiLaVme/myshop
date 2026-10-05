@@ -16,7 +16,9 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     """Полегшений серіалізатор для списку товарів (GET /api/products/)."""
 
-    category = serializers.SlugRelatedField(slug_field="slug", read_only=True)
+    category: serializers.Field = serializers.SlugRelatedField(
+        slug_field="slug", read_only=True
+    )
     avg_rating = serializers.FloatField(read_only=True)
 
     class Meta:

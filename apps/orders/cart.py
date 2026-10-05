@@ -67,6 +67,7 @@ class Cart:
 
     def clear(self) -> None:
         """Повністю очищує кошик (використовується після оформлення замовлення)."""
+        self.cart = {}  # Очищаємо внутрішній атрибут об'єкта
         self.session[settings.CART_SESSION_ID] = {}
         self.save()
 

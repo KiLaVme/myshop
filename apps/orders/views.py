@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
@@ -79,7 +81,7 @@ class CheckoutView(LoginRequiredMixin, FormView):
     success_url = reverse_lazy("orders:checkout_success")
 
     def get_initial(self) -> dict:
-        user = self.request.user
+        user = cast(User, self.request.user)
         return {
             "full_name": user.get_full_name() or user.username,
             "email": user.email,
@@ -115,7 +117,7 @@ class CheckoutView(LoginRequiredMixin, FormView):
         # (замовлення + позиції + списання залишків), або нічого.
         with transaction.atomic():
             order = form.save(commit=False)
-            order.user = self.request.user
+            order.user = cast(User, self.request.user)
             order.save()
 
             for item in cart:
@@ -146,7 +148,8 @@ class CheckoutSuccessView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         order_id = self.request.session.get("last_order_id")
+        user = cast(User, self.request.user)
         context["order"] = (
-            self.request.user.orders.filter(id=order_id).first() if order_id else None
+            user.orders.filter(id=order_id).first() if order_id else None
         )
         return context

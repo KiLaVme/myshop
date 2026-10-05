@@ -64,10 +64,9 @@ class ProductAdmin(admin.ModelAdmin):
     actions = [make_active, make_inactive]
     autocomplete_fields = ["category"]
 
+    @admin.display(description="Фото")
     def image_preview(self, obj: Product):
         """Мініатюра зображення товару прямо у списку адмінки."""
         if obj.image:
             return format_html('<img src="{}" style="height:40px;border-radius:4px;" />', obj.image.url)
         return "-"
-
-    image_preview.short_description = "Фото"

@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from typing import cast
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets
@@ -100,16 +104,18 @@ class OrderViewSet(viewsets.ModelViewSet):
             return OrderCreateSerializer
         return OrderSerializer
 
-    def perform_create(self, serializer: OrderCreateSerializer) -> None:
+    def perform_create(self, serializer: serializers.BaseSerializer) -> None:
         """Створює замовлення з поточного кошика сесії (аналогічно web-checkout)."""
+        order_serializer = cast(OrderSerializer, serializer)
+        user = cast(User, self.request.user)
         cart = Cart(self.request)
         if len(cart) == 0:
-            raise serializer.ValidationError({"detail": "Кошик порожній."})
+            raise serializers.ValidationError({"detail": "Кошик порожній."})
         if cart.has_stock_issues():
-            raise serializer.ValidationError({"detail": "Недостатньо товару на складі."})
+            raise serializers.ValidationError({"detail": "Недостатньо товару на складі."})
 
         with transaction.atomic():
-            order = serializer.save(user=self.request.user)
+            order = order_serializer.save(user=user)
             for item in cart:
                 product = item["product"]
                 OrderItem.objects.create(

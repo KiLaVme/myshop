@@ -52,8 +52,8 @@ def api_client() -> APIClient:
 @pytest.fixture
 def auth_api_client(api_client: APIClient, user: User) -> APIClient:
     """API-клієнт, авторизований через JWT access-токен."""
-    from rest_framework_simplejwt.tokens import RefreshToken
+    from rest_framework_simplejwt.tokens import AccessToken
 
-    refresh = RefreshToken.for_user(user)
-    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh.access_token}")
+    access_token = AccessToken.for_user(user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
     return api_client
