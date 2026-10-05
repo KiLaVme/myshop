@@ -1,12 +1,14 @@
-# CI-пайплайн: "розумний смоук-тест" проєкту + валідація REST API.
+# CI-пайплайн: повна перевірка якості проєкту.
 #
-# Крок 9 додав REST API з автогенерованою OpenAPI-схемою
-# (drf-spectacular). Схема - це "контракт" API для зовнішніх клієнтів,
-# тож варто автоматично перевіряти, що вона взагалі коректно
-# генерується (а не ламається мовчки через помилку в серіалізаторі чи
-# view). `--fail-on-warn` робить навіть попередження фатальними для CI.
+# Крок 10 додав тести, лінтер і типізацію - тепер CI виконує їх усі:
+# flake8 (стиль коду), mypy (типізація), pytest --cov (тести з
+# покриттям), а також попередні перевірки (міграції, Django check,
+# валідація OpenAPI-схеми з Кроку 9).
 #
-# Лінтери/типізація/тести з'являться на Кроці 10.
+# Це фінальна структура пайплайна: подальші кроки (11 - GraphQL) лише
+# додають нові тести у той самий `tests/`, які автоматично підхоплює
+# вже наявний виклик `pytest` нижче - сам workflow більше не потребує
+# структурних змін.
 name: CI
 
 on:
@@ -16,11 +18,9 @@ on:
     branches: [main, develop]
 
 jobs:
-  build-and-check:
+  test:
     runs-on: ubuntu-latest
 
-    # Піднімаємо PostgreSQL як сервіс-контейнер для CI,
-    # аналогічно до db-сервісу в docker-compose.yml
     services:
       postgres:
         image: postgres:16-alpine
@@ -45,6 +45,7 @@ jobs:
       DB_PASSWORD: hopbarley_pass
       DB_HOST: localhost
       DB_PORT: 5432
+      EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
 
     steps:
       - name: Checkout code
@@ -58,8 +59,16 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
-      - name: Install dependencies
-        run: uv sync
+      - name: Install dependencies (main + dev)
+        run: uv sync --extra dev
+
+      - name: Lint with flake8
+        run: uv run flake8 .
+
+      - name: Type-check with mypy
+        run: uv run mypy . || true
+        # || true: mypy інформативний, а не блокуючий -
+        # приберіть "|| true", щоб зробити перевірку типів обов'язковою.
 
       - name: Apply database migrations
         run: |
@@ -72,5 +81,5 @@ jobs:
       - name: Validate OpenAPI schema (drf-spectacular)
         run: uv run python manage.py spectacular --file schema.yml --fail-on-warn
 
-      # --- Наступний крок ---
-      # Крок 10 (Якість): flake8, mypy, pytest --cov
+      - name: Run tests with coverage
+        run: uv run pytest --cov=apps --cov-report=term-missing

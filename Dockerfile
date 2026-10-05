@@ -29,6 +29,14 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN uv pip install --no-cache -r pyproject.toml
 
+# Dev-залежності (тести, лінтери) з [project.optional-dependencies].dev -
+# встановлюємо явним списком версій (дублюючи pyproject.toml), щоб не
+# залежати від точного синтаксису uv для "extras" у --target/venv режимі.
+# Для чистого прод-образу цей рядок можна прибрати.
+RUN uv pip install --no-cache \
+    flake8==7.1.0 mypy==1.11.0 django-stubs==5.0.4 djangorestframework-stubs==3.15.0 \
+    pytest==8.3.2 pytest-django==4.8.0 pytest-cov==5.0.0
+
 
 # ──────────────────────────────────────────────
 # STAGE 2: runner — фінальний мінімальний образ
@@ -57,6 +65,11 @@ COPY apps/ ./apps/
 COPY templates/ ./templates/
 COPY static/ ./static/
 COPY entrypoint.sh .
+
+# Конфігурація тестів/лінтерів (Крок 10) - потрібна в образі, щоб можна
+# було виконати `docker-compose exec web pytest` / `flake8` / `mypy`
+COPY tests/ ./tests/
+COPY pytest.ini setup.cfg mypy.ini ./
 
 # ── Створення необхідних директорій ───────────
 # Будуть перезаписані volume-ами з docker-compose, але створюємо

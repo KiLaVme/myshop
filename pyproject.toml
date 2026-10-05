@@ -22,7 +22,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = []
+dev = [
+    # --- Крок 10: тести, лінтери, типізація ---
+    "flake8==7.1.0",
+    "mypy==1.11.0",
+    "django-stubs==5.0.4",
+    "djangorestframework-stubs==3.15.0",
+    "pytest==8.3.2",
+    "pytest-django==4.8.0",
+    "pytest-cov==5.0.0",
+]
 
 [tool.uv]
 # Проєкт з самого початку веде залежності через uv (сучасний, швидкий

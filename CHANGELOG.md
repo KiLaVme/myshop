@@ -116,10 +116,6 @@
 
 ## Крок 9 — REST API, JWT, документація
 
-- CI (`.github/workflows/ci.yml`, заведений на Кроці 1) доповнено
-  кроком валідації OpenAPI-схеми: `manage.py spectacular --fail-on-warn`
-  ловить помилки в серіалізаторах/views ще до рев'ю коду.
-
 - Додано `djangorestframework`, `djangorestframework-simplejwt`,
   `drf-spectacular`, `django-cors-headers`.
 - `ProductViewSet` (read-only), `OrderViewSet` (CRUD лише власних
@@ -133,3 +129,19 @@
 - `IsAuthenticatedOrReadOnly` за замовчуванням; users бачать і можуть
   редагувати лише свої замовлення/відгуки (перевірка на рівні
   `get_queryset()`/`perform_create()`).
+
+## Крок 10 — Якість: тести, типізація, лінтери
+
+- CI (`.github/workflows/ci.yml`) істотно розширено: тепер це основний
+  момент, коли пайплайн, запущений ще на Кроці 1, стає "повним" -
+  додано `flake8`, `mypy` та `uv run pytest --cov`, встановлення
+  залежностей перейшло на `uv sync --extra dev`.
+
+- `pytest-django`: тести кошика, checkout (транзакції + списання
+  складу), відгуків ("лише після покупки"), веб-каталогу, REST API
+  (товари, JWT реєстрація/логін, ізоляція замовлень між користувачами).
+- `flake8` (`setup.cfg`) та `mypy` + `django-stubs`/
+  `djangorestframework-stubs` (`mypy.ini`).
+- Dev-залежності винесено в `[project.optional-dependencies].dev`
+  (`uv sync --extra dev` локально); у Docker-образі встановлені завжди
+  для зручності `docker-compose exec web pytest`.

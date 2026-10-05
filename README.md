@@ -1,7 +1,7 @@
 # Hop & Barley — інтернет-магазин на Django/DRF
 
-> **Стан проєкту: Крок 9/12 — REST API, JWT, документація.**
-> Це дев'ятий комміт у покроковій розробці за дорожньою картою з ТЗ.
+> **Стан проєкту: Крок 10/12 — Якість (тести, лінтери, типізація).**
+> Це десятий комміт у покроковій розробці за дорожньою картою з ТЗ.
 > Повний функціонал з'являтиметься поступово - див. [CHANGELOG.md](CHANGELOG.md).
 
 Навчальний проєкт: інтернет-магазин товарів для домашнього пивоваріння,
@@ -30,6 +30,24 @@
   "Аналітика продажів" (виторг, середній чек, топ-товари).
 - REST API (`/api/`) з JWT-автентифікацією: товари, замовлення, кошик,
   відгуки, реєстрація/логін. Документація: `/api/docs/` (Swagger UI).
+- Тести (`pytest-django`), лінтер `flake8`, типізація `mypy`.
+
+## Тести та лінтери
+
+```bash
+docker-compose exec web pytest
+docker-compose exec web pytest --cov=apps
+docker-compose exec web flake8 .
+docker-compose exec web mypy .
+```
+
+## CI/CD
+
+Ці самі перевірки (плюс застосування міграцій і `manage.py check`)
+тепер виконуються автоматично в GitHub Actions
+(`.github/workflows/ci.yml`) на кожен push/PR - пайплайн, запущений ще
+на Кроці 1, розширено `flake8`, `mypy` та `pytest --cov`. Докладніше -
+у [CHANGELOG.md](CHANGELOG.md).
 
 ## REST API - швидкий приклад
 
@@ -121,25 +139,6 @@ myshop/
 └── manage.py
 ```
 
-## CI/CD та підключення до GitHub
-
-CI (`.github/workflows/ci.yml`) працює з Кроку 1. На цьому кроці до
-нього додано перевірку валідності OpenAPI-схеми
-(`manage.py spectacular --fail-on-warn`) - якщо зміна в серіалізаторі
-чи view випадково зламає генерацію схеми, CI одразу це покаже.
-Лінтери й тести з'являться на Кроці 10.
-
-Якщо ще не підключали проєкт до GitHub:
-
-```bash
-git init && git add . && git commit -m "Крок 9: REST API, JWT, документація"
-git branch -M main
-git remote add origin https://github.com/<ваш-акаунт>/<repo>.git
-git push -u origin main
-```
-
-Відкрийте вкладку **Actions** - workflow "CI" запуститься автоматично.
-
 ## Наступні кроки
 
-Див. [CHANGELOG.md](CHANGELOG.md). Далі: тести (pytest-django), лінтери (flake8/mypy), типізація.
+Див. [CHANGELOG.md](CHANGELOG.md). Далі: GraphQL-аналітика та CI/CD (GitHub Actions).
