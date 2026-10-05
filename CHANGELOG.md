@@ -132,11 +132,6 @@
 
 ## Крок 10 — Якість: тести, типізація, лінтери
 
-- CI (`.github/workflows/ci.yml`) істотно розширено: тепер це основний
-  момент, коли пайплайн, запущений ще на Кроці 1, стає "повним" -
-  додано `flake8`, `mypy` та `uv run pytest --cov`, встановлення
-  залежностей перейшло на `uv sync --extra dev`.
-
 - `pytest-django`: тести кошика, checkout (транзакції + списання
   складу), відгуків ("лише після покупки"), веб-каталогу, REST API
   (товари, JWT реєстрація/логін, ізоляція замовлень між користувачами).
@@ -145,3 +140,16 @@
 - Dev-залежності винесено в `[project.optional-dependencies].dev`
   (`uv sync --extra dev` локально); у Docker-образі встановлені завжди
   для зручності `docker-compose exec web pytest`.
+
+## Крок 11 — (Бонус) GraphQL, CI/CD, розширені тести
+
+- **GraphQL** (`graphene-django`), єдиний ендпоінт `/graphql/` (у DEBUG -
+  інтерактивний GraphiQL UI). Доступ лише для `is_staff=True`:
+  `revenueSummary`, `revenueByDate(days)`, `topProducts(limit)`,
+  `lowStockProducts(threshold)`, `userActivity(limit)`.
+- Тести `tests/test_graphql.py`: заборона доступу анонімам/звичайним
+  користувачам, коректність аналітичних резолверів.
+- **CI/CD не потребує змін**: пайплайн `.github/workflows/ci.yml`
+  заведений ще на Кроці 1 і розширений на Кроках 9-10, вже виконує
+  `pytest` по всій папці `tests/` - нові GraphQL-тести підхопились
+  автоматично, без жодних правок workflow-файлу.

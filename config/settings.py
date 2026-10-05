@@ -58,12 +58,14 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "drf_spectacular",
     "corsheaders",
+    "graphene_django",
 
     # Додатки проєкту
     "apps.products",
     "apps.orders",
     "apps.reviews",
     "apps.users",
+    "apps.graphql",
 ]
 
 MIDDLEWARE = [
@@ -247,6 +249,13 @@ CORS_ALLOWED_ORIGINS = [
     for o in os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
     if o.strip()
 ]
+
+# -----------------------------------------------------------------
+# GraphQL (бонус за ТЗ, п. 11) - єдиний ендпоінт /graphql/
+# -----------------------------------------------------------------
+GRAPHENE = {
+    "SCHEMA": "apps.graphql.schema.schema",
+}
 
 # -----------------------------------------------------------------
 # Логування - виводимо все у консоль (зручно для docker-compose logs)

@@ -1,7 +1,7 @@
 # Hop & Barley — інтернет-магазин на Django/DRF
 
-> **Стан проєкту: Крок 10/12 — Якість (тести, лінтери, типізація).**
-> Це десятий комміт у покроковій розробці за дорожньою картою з ТЗ.
+> **Стан проєкту: Крок 11/12 — GraphQL, CI/CD, розширені тести.**
+> Це одинадцятий комміт у покроковій розробці за дорожньою картою з ТЗ.
 > Повний функціонал з'являтиметься поступово - див. [CHANGELOG.md](CHANGELOG.md).
 
 Навчальний проєкт: інтернет-магазин товарів для домашнього пивоваріння,
@@ -31,6 +31,39 @@
 - REST API (`/api/`) з JWT-автентифікацією: товари, замовлення, кошик,
   відгуки, реєстрація/логін. Документація: `/api/docs/` (Swagger UI).
 - Тести (`pytest-django`), лінтер `flake8`, типізація `mypy`.
+- **GraphQL-аналітика** (`/graphql/`) для персоналу магазину.
+- **CI/CD** (GitHub Actions): автоматичні лінт/типізація/тести на
+  кожен push/PR.
+
+## GraphQL-аналітика (бонус)
+
+Єдиний ендпоінт `/graphql/` (у DEBUG - інтерактивний GraphiQL UI прямо
+в браузері). Доступ - лише для персоналу (`is_staff=True`), автентифікація
+через сесію Django (увійдіть у `/admin/` або `/account/login/` тим самим
+браузером). Приклад запиту (виконати в GraphiQL після входу як staff):
+
+```graphql
+{
+  revenueSummary { totalRevenue ordersCount averageCheck }
+  topProducts(limit: 5) { productName totalQuantity totalRevenue }
+  lowStockProducts(threshold: 5) { name stock }
+  userActivity(limit: 5) { username ordersCount totalSpent isRepeatCustomer }
+}
+```
+
+## CI/CD
+
+CI вже працює з Кроку 1 (`.github/workflows/ci.yml`) і поступово
+розширювався: Крок 9 додав валідацію OpenAPI-схеми, Крок 10 - flake8,
+mypy та `pytest --cov`. На цьому кроці (GraphQL) workflow **не
+потребує жодних змін** - нові тести `tests/test_graphql.py` просто
+лежать у тій самій папці `tests/`, і вже наявний крок `pytest` у CI
+підхоплює їх автоматично.
+Бейдж статусу збірки :
+
+```markdown
+![CI](https://github.com/kilavme/myshop/actions/workflows/ci.yml/badge.svg)
+```
 
 ## Тести та лінтери
 
@@ -40,14 +73,6 @@ docker-compose exec web pytest --cov=apps
 docker-compose exec web flake8 .
 docker-compose exec web mypy .
 ```
-
-## CI/CD
-
-Ці самі перевірки (плюс застосування міграцій і `manage.py check`)
-тепер виконуються автоматично в GitHub Actions
-(`.github/workflows/ci.yml`) на кожен push/PR - пайплайн, запущений ще
-на Кроці 1, розширено `flake8`, `mypy` та `pytest --cov`. Докладніше -
-у [CHANGELOG.md](CHANGELOG.md).
 
 ## REST API - швидкий приклад
 
@@ -141,4 +166,4 @@ myshop/
 
 ## Наступні кроки
 
-Див. [CHANGELOG.md](CHANGELOG.md). Далі: GraphQL-аналітика та CI/CD (GitHub Actions).
+Див. [CHANGELOG.md](CHANGELOG.md). Далі: фінальна перевірка проєкту перед здачею (Крок 12).
