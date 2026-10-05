@@ -28,7 +28,7 @@ class ReviewViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     throttle_scope = "reviews"
     http_method_names = ["get", "post", "head", "options"]
-  
+
     def get_product(self) -> Product:
         return get_object_or_404(Product, pk=self.kwargs["product_id"])
 

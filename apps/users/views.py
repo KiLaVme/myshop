@@ -57,7 +57,7 @@ class AccountView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        
+
         user = cast(User, self.request.user)
 
         orders = Order.objects.filter(user=user).prefetch_related("items__product")
