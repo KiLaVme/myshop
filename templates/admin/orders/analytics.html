@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Аналітика продажів</h1>
+<p>Дані станом на {{ generated_at }}</p>
+
+<div style="display:flex; gap:24px; margin-bottom:24px;">
+    <div style="border:1px solid #ccc; padding:16px; border-radius:8px;">
+        <h3>Загальний виторг</h3>
+        <p style="font-size:24px;">${{ total_revenue }}</p>
+    </div>
+    <div style="border:1px solid #ccc; padding:16px; border-radius:8px;">
+        <h3>Кількість замовлень</h3>
+        <p style="font-size:24px;">{{ orders_count }}</p>
+    </div>
+    <div style="border:1px solid #ccc; padding:16px; border-radius:8px;">
+        <h3>Середній чек</h3>
+        <p style="font-size:24px;">${{ avg_check|floatformat:2 }}</p>
+    </div>
+</div>
+
+<h2>Топ-10 товарів за кількістю продажів</h2>
+<table>
+    <thead>
+        <tr><th>Товар</th><th>Продано, шт.</th><th>Виторг</th></tr>
+    </thead>
+    <tbody>
+        {% for row in top_products %}
+        <tr>
+            <td>{{ row.product__name }}</td>
+            <td>{{ row.total_quantity }}</td>
+            <td>${{ row.total_revenue }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">Немає даних (ще немає завершених замовлень).</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
