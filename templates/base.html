@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{% static 'css/extra.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% if user.is_authenticated %}user-logged-in{% endif %}">
 <header>
     <div class="header-container">
         <a href="{% url 'products:catalog' %}" class="header__logo">
