@@ -1,80 +1,158 @@
 # Hop & Barley — інтернет-магазин на Django/DRF
 
-> **Стан проєкту: Крок 11/12 — GraphQL, CI/CD, розширені тести.**
-> Це одинадцятий комміт у покроковій розробці за дорожньою картою з ТЗ.
-> Повний функціонал з'являтиметься поступово - див. [CHANGELOG.md](CHANGELOG.md).
+> **Стан проєкту: Крок 12/12 — Фінальна версія.**
+>Повна історія розробки - у [CHANGELOG.md](CHANGELOG.md),
+> чек-лист відповідності ТЗ - у [CHECKLIST.md](CHECKLIST.md).
 
 Навчальний проєкт: інтернет-магазин товарів для домашнього пивоваріння,
-на основі HTML/CSS-шаблону
+реалізований за технічним завданням на основі HTML/CSS-шаблону
 [Hop & Barley](https://github.com/MagicCodeGit/Hop-and-Barley).
 
-## Що реалізовано на цьому кроці
+![CI](https://github.com/kilavme/myshop/actions/workflows/ci.yml/badge.svg)
 
-- Усе з Кроків 1-2 (Docker, uv, PostgreSQL, моделі БД).
-- Каталог товарів (`/`, `/products/`): пагінація, пошук за назвою/описом,
-  фільтр за категорією та ціною, сортування (новизна/ціна/рейтинг).
-- Сторінка товару (`/product/<slug>/`): деталі, рейтинг, відгуки.
-  Залишити відгук можна лише після покупки товару (адмінка поки що
-  єдиний спосіб увійти/додати замовлення для перевірки - повноцінний
-  вхід з'явиться на Кроці 7).
-- Кошик (`/cart/`) на основі сесій Django: додавання/зміна кількості/
-  видалення товару, перевірка залишків на складі, лічильник у шапці сайту.
-- Оформлення замовлення (`/cart/checkout/`): форма контактних даних та
-  доставки, атомарне створення замовлення зі списанням складу,
-  email-підтвердження (console-backend у DEBUG). Потрібен вхід -
-  тепер доступний повноцінний вхід/реєстрація покупців.
-- Особистий кабінет (`/account/`): реєстрація, вхід/вихід, історія
-  замовлень з фільтром за статусом, редагування профілю, зміна пароля.
-- Кастомізована адмін-панель (`/admin/`): зручний список товарів з
-  inline-редагуванням, кастомні фільтри та масові дії, сторінка
-  "Аналітика продажів" (виторг, середній чек, топ-товари).
-- REST API (`/api/`) з JWT-автентифікацією: товари, замовлення, кошик,
-  відгуки, реєстрація/логін. Документація: `/api/docs/` (Swagger UI).
-- Тести (`pytest-django`), лінтер `flake8`, типізація `mypy`.
-- **GraphQL-аналітика** (`/graphql/`) для персоналу магазину.
-- **CI/CD** (GitHub Actions): автоматичні лінт/типізація/тести на
-  кожен push/PR.
 
-## GraphQL-аналітика (бонус)
+## Опис проєкту
 
-Єдиний ендпоінт `/graphql/` (у DEBUG - інтерактивний GraphiQL UI прямо
-в браузері). Доступ - лише для персоналу (`is_staff=True`), автентифікація
-через сесію Django (увійдіть у `/admin/` або `/account/login/` тим самим
-браузером). Приклад запиту (виконати в GraphiQL після входу як staff):
+- **Веб-інтерфейс** на Django (шаблони, сесійна автентифікація):
+  каталог, сторінка товару з відгуками, кошик, оформлення замовлення,
+  особистий кабінет, адмін-панель з аналітикою.
+- **REST API** на DRF з JWT-автентифікацією (access + refresh) для
+  зовнішніх клієнтів, документація Swagger/ReDoc.
+- **GraphQL** (`/graphql/`) - аналітичні запити для персоналу: виторг,
+  тренди продажів, топ-товари, залишки на складі, активність користувачів.
+- **CI/CD** (GitHub Actions) - лінт, типізація, тести на кожен push/PR.
+- **PostgreSQL** як база даних, **Docker Compose** для розгортання,
+  **uv** як менеджер залежностей.
 
-```graphql
-{
-  revenueSummary { totalRevenue ordersCount averageCheck }
-  topProducts(limit: 5) { productName totalQuantity totalRevenue }
-  lowStockProducts(threshold: 5) { name stock }
-  userActivity(limit: 5) { username ordersCount totalSpent isRepeatCustomer }
-}
+## Стек технологій
+
+- Python 3.12, Django 5, Django REST Framework
+- djangorestframework-simplejwt (JWT), django-filter, drf-spectacular,
+  graphene-django (GraphQL)
+- PostgreSQL 16, Docker / Docker Compose, Gunicorn, WhiteNoise
+- [uv](https://docs.astral.sh/uv/) - менеджер залежностей
+- pytest-django, flake8, mypy, GitHub Actions
+
+## Структура проєкту
+
+```
+myshop/
+├── config/                  # Налаштування Django, urls, wsgi/asgi
+│   ├── settings.py
+│   ├── urls.py                # веб-маршрути + /api/, /api/docs/, /graphql/
+│   └── api_urls.py            # усі REST-маршрути /api/...
+├── apps/
+│   ├── products/               # Category, Product, каталог, фільтри, API
+│   ├── orders/                  # Cart (сесія), Order/OrderItem, checkout, API
+│   ├── users/                    # Profile, реєстрація/логін, кабінет, API
+│   ├── reviews/                    # Review (рейтинги 1-5), API
+│   └── graphql/                     # GraphQL-схема аналітики (бонус)
+├── templates/                       # Django-шаблони (дизайн Hop & Barley)
+├── static/                           # CSS/JS/зображення з оригінального шаблону
+├── tests/                             # pytest-тести
+├── .github/workflows/ci.yml            # CI (GitHub Actions)
+├── docker-compose.yml
+├── Dockerfile                          # multi-stage, на основі uv
+├── entrypoint.sh
+├── pyproject.toml                      # залежності (uv)
+├── pytest.ini / setup.cfg / mypy.ini
+├── CHANGELOG.md                        # покрокова історія розробки
+├── CHECKLIST.md
+└── manage.py
 ```
 
-## CI/CD
+## Встановлення та запуск (Docker — рекомендовано)
 
-CI вже працює з Кроку 1 (`.github/workflows/ci.yml`) і поступово
-розширювався: Крок 9 додав валідацію OpenAPI-схеми, Крок 10 - flake8,
-mypy та `pytest --cov`. На цьому кроці (GraphQL) workflow **не
-потребує жодних змін** - нові тести `tests/test_graphql.py` просто
-лежать у тій самій папці `tests/`, і вже наявний крок `pytest` у CI
-підхоплює їх автоматично.
-Бейдж статусу збірки :
+1. Скопіюйте приклад файлу оточення та за потреби відредагуйте:
 
-```markdown
-![CI](https://github.com/kilavme/myshop/actions/workflows/ci.yml/badge.svg)
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Запустіть застосунок та базу даних:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+   При старті контейнера `web` автоматично: очікується готовність БД,
+   генеруються та застосовуються міграції, збирається статика,
+   опційно створюється суперкористувач (якщо в `.env` задані
+   `DJANGO_SUPERUSER_*`).
+
+3. (Опційно) наповніть каталог демо-товарами:
+
+   ```bash
+   docker-compose exec web python manage.py seed_data
+   ```
+
+4. Відкрийте:
+   - Веб-магазин: http://localhost:8000/
+   - Адмін-панель: http://localhost:8000/admin/
+   - Swagger API-документація: http://localhost:8000/api/docs/
+   - GraphiQL (потрібен вхід як `is_staff`): http://localhost:8000/graphql/
+
+> Контейнер `web` навмисно працює від root (без non-root-користувача) -
+> спрощення для навчального проєкту, щоб уникнути конфліктів прав
+> доступу з Docker-томами (`static_volume`, `media_volume`) на
+> Windows/Docker Desktop.
+
+## Локальна розробка з `uv` (без Docker)
+
+```bash
+uv sync --extra dev            # створить .venv і встановить усі залежності
+cp .env.example .env           # відредагуйте DB_HOST=localhost тощо
+uv run python manage.py migrate
+uv run python manage.py createsuperuser
+uv run python manage.py seed_data
+uv run python manage.py runserver
+```
+
+Керування залежностями:
+
+```bash
+uv add <package>          # нова залежність (одразу в pyproject.toml)
+uv add --dev <package>    # dev-залежність (лінтери, тести)
+uv lock                   # перегенерувати uv.lock
+uv sync --extra dev       # синхронізувати .venv з pyproject.toml/uv.lock
 ```
 
 ## Тести та лінтери
 
 ```bash
 docker-compose exec web pytest
-docker-compose exec web pytest --cov=apps
+docker-compose exec web pytest --cov=apps --cov-report=term-missing
 docker-compose exec web flake8 .
 docker-compose exec web mypy .
 ```
 
-## REST API - швидкий приклад
+Локально (без Docker): замініть `docker-compose exec web` на `uv run`.
+
+Тести покривають: кошик (обмеження за залишками), checkout
+(транзакційне створення замовлення, списання складу), доступ до
+відгуків лише після покупки, каталог (пошук/фільтри), REST API
+(товари, JWT реєстрація/логін, ізоляція замовлень між користувачами),
+GraphQL-аналітику (доступ лише для персоналу).
+
+## CI/CD та підключення до GitHub
+
+CI заведений з Кроку 1 і розвивався поступово разом із проєктом:
+базова перевірка (міграції + `manage.py check`) → валідація
+OpenAPI-схеми (Крок 9) → повний набір `flake8`/`mypy`/`pytest`
+(Крок 10). Фінальний `.github/workflows/ci.yml` виконує все це разом.
+GitHub Actions вмикається автоматично, щойно файл опиняється в гілці
+репозиторію. Після пушу відкрийте вкладку **Actions** у репозиторії - workflow "CI"
+запуститься автоматично і надалі виконуватиметься на кожен push у `main`.
+
+## REST API
+
+Базовий URL: `/api/`. Інтерактивна документація - `/api/docs/`
+(Swagger UI) або `/api/redoc/` (ReDoc), схема OpenAPI - `/api/schema/`.
+
+### Автентифікація (JWT)
+
+Веб-інтерфейс використовує **сесійну** автентифікацію Django. Для
+зовнішніх клієнтів API використовується **JWT** (access + refresh).
 
 ```bash
 # Реєстрація (одразу повертає JWT-пару)
@@ -86,84 +164,81 @@ curl -X POST http://localhost:8000/api/users/register/ \
 curl -X POST http://localhost:8000/api/users/login/ \
   -H "Content-Type: application/json" \
   -d '{"username": "john", "password": "StrongPass123"}'
+# -> {"access": "...", "refresh": "..."}
 
 # Використання access-токена
 curl http://localhost:8000/api/users/me/ \
   -H "Authorization: Bearer <access_token>"
+
+# Оновлення access-токена через refresh
+curl -X POST http://localhost:8000/api/users/login/refresh/ \
+  -H "Content-Type: application/json" \
+  -d '{"refresh": "<refresh_token>"}'
 ```
 
-## Швидкий старт
+`access` живе 15 хв (`ACCESS_TOKEN_LIFETIME_MIN`), `refresh` - 7 днів
+(`REFRESH_TOKEN_LIFETIME_DAYS`), ротується при кожному оновленні
+(`ROTATE_REFRESH_TOKENS=True`).
 
-```bash
-cp .env.example .env
-docker-compose up --build
-docker-compose exec web python manage.py seed_data   # демо-товари
+### Основні ендпоінти
+
+| Ресурс | Дія | URL | Метод |
+|---|---|---|---|
+| Товари | Список / деталі | `/api/products/`, `/api/products/<id>/` | GET |
+| Замовлення | Список своїх / створення з кошика | `/api/orders/` | GET / POST |
+| Замовлення | Деталі / скасування | `/api/orders/<id>/` | GET / PATCH |
+| Кошик | Перегляд / додати | `/api/cart/` | GET / POST |
+| Кошик | Змінити / видалити позицію | `/api/cart/<product_id>/` | PATCH / DELETE |
+| Відгуки | Список / додати | `/api/products/<id>/reviews/` | GET / POST |
+| Користувачі | Реєстрація / логін / поточний | `/api/users/register\|login\|me/` | POST / POST / GET |
+
+Права доступу: користувач бачить і може змінювати **лише свої**
+замовлення та відгуки. Фільтрація/пошук товарів:
+`?category=<slug>&min_price=&max_price=&search=&ordering=`.
+
+## GraphQL-аналітика (бонус)
+
+Єдиний ендпоінт `/graphql/` (у DEBUG - інтерактивний GraphiQL UI).
+Доступ лише для персоналу (`is_staff=True`), автентифікація через
+сесію Django.
+
+```graphql
+{
+  revenueSummary { totalRevenue ordersCount averageCheck }
+  revenueByDate(days: 30) { date revenue ordersCount }
+  topProducts(limit: 5) { productName totalQuantity totalRevenue }
+  lowStockProducts(threshold: 5) { name stock }
+  userActivity(limit: 5) { username ordersCount totalSpent isRepeatCustomer }
+}
 ```
 
-Відкрийте http://localhost:8000/ - каталог з демо-товарами.
+## Веб-функціонал
 
-## Стек технологій
+- **Каталог** (`/`, `/products/`): пагінація, фільтр за категорією та
+  ціною, пошук, сортування (новизна/ціна/рейтинг).
+- **Сторінка товару** (`/product/<slug>/`): опис, ціна, рейтинг,
+  відгуки (лише після покупки - перевірка через `OrderItem`).
+- **Кошик** (`/cart/`): сесія Django, перевірка залишків на складі.
+- **Оформлення замовлення** (`/cart/checkout/`): форма доставки,
+  атомарне створення замовлення (`transaction.atomic`), списання
+  складу, email-сповіщення (console-backend у DEBUG).
+- **Особистий кабінет** (`/account/`): реєстрація, вхід, історія
+  замовлень з фільтром, редагування профілю, зміна пароля.
+- **Адмін-панель** (`/admin/`): кастомні дії, фільтри, inline-
+  редагування, сторінка "Аналітика продажів" (виторг, середній чек,
+  топ-10 товарів).
 
-- Python 3.12, Django 5
-- PostgreSQL 16
-- Docker / Docker Compose, Gunicorn, WhiteNoise
-- [uv](https://docs.astral.sh/uv/) — менеджер залежностей та віртуальних оточень
+## Модель даних
 
-## Запуск (Docker — рекомендовано)
+`Category` (з вкладеністю через `parent`), `Product`, `Order`/
+`OrderItem` (зі снепшотом ціни на момент покупки), `Review`
+(унікальний на пару користувач+товар, рейтинг 1-5), `Profile`
+(розширення `User`).
 
-```bash
-cp .env.example .env
-docker-compose up --build
-```
+## Відомі обмеження
 
-Відкрийте http://localhost:8000/ — побачите заглушку "Hop & Barley",
-що підтверджує: Django, PostgreSQL, шаблони та статика працюють коректно.
-
-Адмін-панель: http://localhost:8000/admin/ (суперкористувача поки що
-потрібно створити вручну: `docker-compose exec web python manage.py createsuperuser`).
-
-## Локальна розробка з `uv` (без Docker)
-
-```bash
-# Встановлення uv (якщо ще не встановлено): https://docs.astral.sh/uv/getting-started/installation/
-uv sync                      # створить .venv і встановить залежності з pyproject.toml
-uv run python manage.py migrate      # потрібен локальний PostgreSQL (див. .env)
-uv run python manage.py runserver
-```
-
-`uv sync` читає `pyproject.toml` (і `uv.lock`, якщо він є) та створює
-відтворюване оточення `.venv/`. Щоб додати нову залежність:
-
-```bash
-uv add <package>          # додає в pyproject.toml і одразу встановлює
-uv add --dev <package>    # dev-залежність (лінтери, тести)
-uv lock                   # перегенерувати uv.lock після ручних правок pyproject.toml
-```
-
-## Структура проєкту (на цьому кроці)
-
-```
-myshop/
-├── config/
-├── apps/
-│   ├── products/       # Category, Product + каталог + сторінка товару
-│   ├── orders/           # Order, OrderItem (модель, використовується для
-│   │                      #   перевірки "чи купував товар")
-│   └── reviews/            # Review
-├── templates/
-│   ├── base.html
-│   └── products/
-│       ├── catalog.html
-│       └── product_detail.html
-├── static/
-├── docker-compose.yml
-├── Dockerfile
-├── entrypoint.sh
-├── pyproject.toml
-├── CHANGELOG.md
-└── manage.py
-```
-
-## Наступні кроки
-
-Див. [CHANGELOG.md](CHANGELOG.md). Далі: фінальна перевірка проєкту перед здачею (Крок 12).
+- Оплата в checkout - вибір способу (картка/накладений платіж) без
+  реальної інтеграції з платіжним провайдером (за межами ТЗ).
+- `mypy` у CI запускається в неблокуючому режимі (`|| true`) - зручно
+  для навчального проєкту; прибрати цей прапорець у
+  `.github/workflows/ci.yml`, щоб зробити перевірку типів обов'язковою.
